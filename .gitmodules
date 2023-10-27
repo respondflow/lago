@@ -4,3 +4,6 @@
 [submodule "front"]
 	path = front
 	url = git@github.com:respondflow/lago-front.git
+[submodule "pdf"]
+	path = pdf
+	url = git@github.com:respondflow/lago-gotenberg.git
