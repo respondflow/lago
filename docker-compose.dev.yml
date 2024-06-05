@@ -12,6 +12,7 @@ services:
   traefik:
     image: "traefik:v2.5.4"
     container_name: lago_traefik
+    restart: unless-stopped
     ports:
       - 80:80
       - 443:443
@@ -56,6 +57,8 @@ services:
     container_name: lago_front
     stdin_open: true
     restart: unless-stopped
+    depends_on:
+      - api
     build:
       context: ./front
       dockerfile: $LAGO_PATH/front/Dockerfile.dev
@@ -69,6 +72,7 @@ services:
       - APP_DOMAIN=https://app.lago.dev
       - CODEGEN_API=https://api.lago.dev:3000
       - LAGO_DISABLE_SIGNUP=${LAGO_DISABLE_SIGNUP:-}
+      - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.app.rule=Host(`app.lago.dev`)"
@@ -81,6 +85,8 @@ services:
     container_name: lago_api
     restart: unless-stopped
     command: ["./scripts/start.dev.sh"]
+    depends_on:
+      - db
     build:
       context: ./api
       dockerfile: $LAGO_PATH/api/Dockerfile.dev
@@ -97,16 +103,21 @@ services:
       - ENCRYPTION_DETERMINISTIC_KEY=${ENCRYPTION_DETERMINISTIC_KEY:-your-encrpytion-deterministic-key}
       - ENCRYPTION_KEY_DERIVATION_SALT=${ENCRYPTION_KEY_DERIVATION_SALT:-your-encrpytion-derivation-salt}
       - LAGO_USE_AWS_S3=${LAGO_USE_AWS_S3:-false}
+      - LAGO_PARALLEL_THREADS_COUNT=${LAGO_PARALLEL_THREADS_COUNT:-4}
       - LAGO_PDF_URL=${LAGO_PDF_URL:-http://pdf:3000}
       - LAGO_REDIS_CACHE_URL=redis://redis:6379
       - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY:-}
       - LAGO_DISABLE_SEGMENT=${LAGO_DISABLE_SEGMENT:-}
+      - LAGO_DISABLE_WALLET_REFRESH=${LAGO_DISABLE_WALLET_REFRESH:-}
       - LAGO_LICENSE=${LAGO_LICENSE:-}
       - LAGO_FROM_EMAIL=${LAGO_FROM_EMAIL:-noreply@getlago.com}
       - LAGO_SIDEKIQ_WEB=true
       - SIDEKIQ_EVENTS=true
       - LAGO_CLICKHOUSE_ENABLED=true
       - LAGO_KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - LAGO_KAFKA_RAW_EVENTS_TOPIC=events-raw
+      - LAGO_KAFKA_CLICKHOUSE_CONSUMER_GROUP=clickhouse
+      - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api_http.rule=Host(`api.lago.dev`)"
@@ -124,6 +135,8 @@ services:
     container_name: lago_api_worker
     restart: unless-stopped
     command: ["./scripts/start.worker.dev.sh"]
+    depends_on:
+      - api
     build:
       context: ./api
       dockerfile: $LAGO_PATH/api/Dockerfile.dev
@@ -139,18 +152,25 @@ services:
       - ENCRYPTION_KEY_DERIVATION_SALT=${ENCRYPTION_KEY_DERIVATION_SALT:-your-encrpytion-derivation-salt}
       - LAGO_USE_AWS_S3=${LAGO_USE_AWS_S3:-false}
       - LAGO_FRONT_URL=${FRONT_URL:-https://app.lago.dev}
+      - LAGO_PARALLEL_THREADS_COUNT=${LAGO_PARALLEL_THREADS_COUNT:-4}
       - LAGO_PDF_URL=${LAGO_PDF_URL:-http://pdf:3000}
       - LAGO_REDIS_CACHE_URL=redis://redis:6379
       - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY:-}
       - LAGO_DISABLE_SEGMENT=${LAGO_DISABLE_SEGMENT:-}
+      - LAGO_DISABLE_WALLET_REFRESH=${LAGO_DISABLE_WALLET_REFRESH:-}
       - LAGO_FROM_EMAIL=${LAGO_FROM_EMAIL:-noreply@getlago.com}
       - SIDEKIQ_EVENTS=true
       - LAGO_CLICKHOUSE_ENABLED=true
       - LAGO_KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - LAGO_KAFKA_RAW_EVENTS_TOPIC=events-raw
+      - LAGO_KAFKA_CLICKHOUSE_CONSUMER_GROUP=clickhouse
+      - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
 
   api-events-worker:
     image: api
     container_name: lago_api_events_worker
+    depends_on:
+      - api
     restart: unless-stopped
     command: ["./scripts/start.events.worker.dev.sh"]
     build:
@@ -168,20 +188,27 @@ services:
       - ENCRYPTION_KEY_DERIVATION_SALT=${ENCRYPTION_KEY_DERIVATION_SALT:-your-encrpytion-derivation-salt}
       - LAGO_USE_AWS_S3=${LAGO_USE_AWS_S3:-false}
       - LAGO_FRONT_URL=${FRONT_URL:-https://app.lago.dev}
+      - LAGO_PARALLEL_THREADS_COUNT=${LAGO_PARALLEL_THREADS_COUNT:-4}
       - LAGO_PDF_URL=${LAGO_PDF_URL:-http://pdf:3000}
       - LAGO_REDIS_CACHE_URL=redis://redis:6379
       - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY:-}
       - LAGO_DISABLE_SEGMENT=${LAGO_DISABLE_SEGMENT:-}
+      - LAGO_DISABLE_WALLET_REFRESH=${LAGO_DISABLE_WALLET_REFRESH:-}
       - LAGO_FROM_EMAIL=${LAGO_FROM_EMAIL:-noreply@getlago.com}
       - SIDEKIQ_EVENTS=true
       - LAGO_CLICKHOUSE_ENABLED=true
       - LAGO_KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - LAGO_KAFKA_RAW_EVENTS_TOPIC=events-raw
+      - LAGO_KAFKA_CLICKHOUSE_CONSUMER_GROUP=clickhouse
+      - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
 
   api-clock:
     image: api
     container_name: lago_api_clock
     restart: unless-stopped
     command: ["./scripts/start.clock.dev.sh"]
+    depends_on:
+      - api
     build:
       context: ./api
       dockerfile: $LAGO_PATH/api/Dockerfile.dev
@@ -194,14 +221,19 @@ services:
       - SECRET_KEY_BASE=${SECRET_KEY_BASE:-your-secret-key-base-hex-64}
       - ENCRYPTION_PRIMARY_KEY=${ENCRYPTION_PRIMARY_KEY:-your-encrpytion-primary-key}
       - ENCRYPTION_DETERMINISTIC_KEY=${ENCRYPTION_DETERMINISTIC_KEY:-your-encrpytion-deterministic-key}
-      - ENCRYPTION_KEY_DERIVATION_SALT={ENCRYPTION_KEY_DERIVATION_SALT:-your-encrpytion-derivation-salt}
+      - ENCRYPTION_KEY_DERIVATION_SALT=${ENCRYPTION_KEY_DERIVATION_SALT:-your-encrpytion-derivation-salt}
       - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY:-}
       - LAGO_DISABLE_SEGMENT=${LAGO_DISABLE_SEGMENT:-}
+      - LAGO_DISABLE_WALLET_REFRESH=${LAGO_DISABLE_WALLET_REFRESH:-}
       - LAGO_CLICKHOUSE_ENABLED=true
       - LAGO_KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - LAGO_KAFKA_RAW_EVENTS_TOPIC=events-raw
+      - LAGO_KAFKA_CLICKHOUSE_CONSUMER_GROUP=clickhouse
+      - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
 
   pdf:
     image: getlago/lago-gotenberg:7
+    restart: unless-stopped
     command:
       - "gotenberg"
       - "--log-level=debug"
@@ -216,6 +248,7 @@ services:
     image: mailhog/mailhog
     container_name: lago_mailhog
     restart: unless-stopped
+    platform: linux/amd64
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mail.rule=Host(`mail.lago.dev`)"
@@ -226,6 +259,7 @@ services:
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:v23.2.9
     container_name: redpanda
+    restart: unless-stopped
     hostname: redpanda
     command:
       - redpanda start
@@ -271,12 +305,11 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server
     container_name: clickhouse
+    restart: unless-stopped
     hostname: clickhouse
     user: '101:101'
     depends_on:
       - db
-      - minio
-      - miniocreatebuckets
       - redpanda
       - redpandacreatetopics
     volumes:
@@ -286,33 +319,3 @@ services:
     ports:
       - 9000:9000
       - 8123:8123
-
-  minio:
-    image: quay.io/minio/minio
-    container_name: minio
-    hostname: minio
-    command: server --address 0.0.0.0:10000 --console-address 0.0.0.0:10001 /data
-    ports:
-      - 10000:10000
-    environment:
-      MINIO_ROOT_USER: lago
-      MINIO_ROOT_PASSWORD: lagopassword
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.minio.rule=Host(`minio.lago.dev`)"
-      - "traefik.http.routers.minio.entrypoints=websecure"
-      - "traefik.http.routers.minio.tls=true"
-      - "traefik.http.services.minio.loadbalancer.server.port=10001"
-
-  miniocreatebuckets:
-    image: minio/mc
-    depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set lagominio http://minio:10000 lago lagopassword;
-      /usr/bin/mc admin info lagominio;
-      /usr/bin/mc mb lagominio/clickhouse;
-      /usr/bin/mc policy set public lagominio/clickhouse;
-      exit 0;
-      "

@@ -51,7 +51,7 @@ Engineers be like…
 
 Read more first-hand experiences from Qonto, Algolia, Pleo, Segment, or the 350+. Hackernews comments [here](https://news.ycombinator.com/item?id=31424450).
 
-**The Solution:** Lago, the open-source billing API for product-led SaaS 
+**The Solution:** Lago, the open-source billing API for product-led SaaS
 - Event-based: if you can track it, you can charge for it;
 - Built for product-led growth companies;
 - Hybrid pricing: subscription and usage;
@@ -105,6 +105,13 @@ docker-compose up
 
 You can now open your browser and go to http://localhost to connect to the application. Lago's API is exposed at http://localhost:3000.
 
+Note that if our docker server is not at http://localhost, the following env variables must be set: `LAGO_API_URL`. This may be on the command line or in your .env file. For example:
+
+```
+LAGO_API_URL="http://192.168.122.71:3000"
+LAGO_FRONT_URL="http://192.168.122.71"
+```
+
 ### Find your API key
 Your API Key can be found directly in the UI:
 
@@ -115,7 +122,7 @@ Your API Key can be found directly in the UI:
 ### Analytics and tracking
 Please note that Lago, by default, tracks basic actions performed on your self-hosted instance. If you do not disable tracking, you may receive specific communications or product updates. However, rest assured that Lago will not collect any personal information about your customers or financial information about your invoices.
 
-If you would like to know more about Lago's analytics or remove the entire tracking, please refer to [this page](https://doc.getlago.com/docs/guide/self-hosting/tracking) for comprehensive information.
+If you would like to know more about Lago's analytics or remove the entire tracking, please refer to [this page](https://doc.getlago.com/guide/self-hosted/tracking-analytics) for comprehensive information.
 
 ### Version, environment variables and components
 Docker images are always updated to the last stable version in the docker-compose.yml file. You can use a different tag if needed by checking the releases list.
@@ -128,7 +135,7 @@ Contact our team at hello@getlago.com to get started with Lago Cloud. More infor
 ## 🚀 Getting the most out of Lago
 - See the [documentation](https://doc.getlago.com) to learn more about all the features;
 - Use our [templates](https://www.getlago.com/resources/templates/all) to get inspiration and learn how to reproduce Algolia’s, Segment’s and Klaviyo’s pricing models;
-- Join our [Slack community](https://join.slack.com/t/lago-community/shared_invite/zt-1bw903041-PsxQmQios5utmETm1EZkvQ) if you need help, or want to chat, we’re here to help;
+- Join our [Slack community](https://www.getlago.com/slack) if you need help, or want to chat, we’re here to help;
 - Contribute on GitHub: read our [guidelines](https://github.com/getlago/lago/blob/main/CONTRIBUTING.md);
 - Follow us on [Twitter](https://twitter.com/GetLago) for the latest news;
 - You can email us as well: hello@getlago.com.
@@ -140,7 +147,7 @@ You can follow this [guide](https://github.com/getlago/lago/wiki/Development-Env
 You can contribute by following our [guidelines](https://github.com/getlago/lago/blob/main/CONTRIBUTING.md).
 
 ## 💡 Philosophy
-B2B SaaS has evolved, but billing has not yet. 
+B2B SaaS has evolved, but billing has not yet.
 
 ### 1- We’re not in the “subscription economy” anymore. And we won’t go “full usage-based pricing” quite yet
 Pricings are now mostly hybrid: they include a usage-based component (i.e. “if you use more you pay more”) and a subscription component (i.e. a recurring fee for basic usage).
@@ -148,10 +155,10 @@ Pricings are now mostly hybrid: they include a usage-based component (i.e. “if
 Not all software companies will go full “usage-based” like Snowflake for instance. This model is the new standard for cloud infrastructure products. However, in other areas of SaaS, users want to know beforehand how much they will pay to control their spending and software companies want to be able to predict recurring revenues.
 
 ### 2- Go-to-market is not either bottom-up or top-down anymore
-SaaS used to be either self-service (SMBs) or sales-led (Enterprises). 
+SaaS used to be either self-service (SMBs) or sales-led (Enterprises).
 Go-to-market now mixes the self-service (all customers access the same price plans) and sales-led (customers get a custom quote from a sales representative) motions.
 A typical journey involves an individual contributor in a company who tests a new tool, puts their corporate credit card in, and starts spreading the use of the tool within the organization. At that point, the VP or head of department might want to upgrade to a custom plan tailored to the needs of the whole organization.
-As a result, billing needs to be flexible, automated, and transparent enough to embrace this hybrid go-to-market motion as well. 
+As a result, billing needs to be flexible, automated, and transparent enough to embrace this hybrid go-to-market motion as well.
 
 ### 3- The “rent seeker” pricing of current billing solutions needs to stop
 Why do payment companies take a cut on revenues?
